@@ -7970,7 +7970,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1228800240}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1846861872}
+        m_TargetAssemblyTypeName: ImageAnimationController, Assembly-CSharp
+        m_MethodName: ClosePanel
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1228800240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12645,6 +12657,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BgCvsGroup: {fileID: 1254672591}
   Promote: {fileID: 1511985585}
+  closeButton: {fileID: 1228800239}
+  playerController: {fileID: 715333197}
+  playerInput: {fileID: 715333197}
 --- !u!1 &1850677522 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6772348541972849482, guid: 022bafd1e2a048443b9c38eea4f5fef7, type: 3}
