@@ -10,8 +10,11 @@ public class ScenesManager : Singleton<ScenesManager>
     public List<GameObject> DontDesObj;
     public Slider progressBar;
     public Text progressText;
+    public Text Scenename;
     public float loadSpeed = 0.5f;
     public GameObject Loadscenes;
+    public GameObject Interface;
+    private bool alreadyDone = false;
 
     private void Start()
     {
@@ -26,7 +29,9 @@ public class ScenesManager : Singleton<ScenesManager>
     // 异步加载场景
     public void LoadScene(string sceneName)
     {
+        Scenename.text= sceneName;
         StartCoroutine(LoadSceneAsync(sceneName));
+
     }
 
     IEnumerator LoadSceneAsync(string sceneName)
@@ -64,5 +69,22 @@ public class ScenesManager : Singleton<ScenesManager>
             }
             yield return null;
         }
+    }
+    public void Update()
+    {
+
+
+        
+            if (!alreadyDone && Input.anyKeyDown)
+            {
+            alreadyDone = true;
+                Interface.SetActive(false);
+                Loadscenes.SetActive(true);
+                LoadScene("3D场景");
+
+
+
+            }
+        
     }
 }
