@@ -12,6 +12,8 @@ public class ScenesManager : Singleton<ScenesManager>
     public Text progressText;
     public float loadSpeed = 0.5f;
     public GameObject Loadscenes;
+    public GameObject Interface;
+    private bool alreadyDone = false;
 
     private void Start()
     {
@@ -64,5 +66,20 @@ public class ScenesManager : Singleton<ScenesManager>
             }
             yield return null;
         }
+    }
+    public void Update()
+    {
+
+
+        
+            if (!alreadyDone && Input.anyKeyDown)
+            {
+            alreadyDone = true;
+                Interface.SetActive(false);
+                Loadscenes.SetActive(true);
+                LoadScene("3D³¡¾°");
+
+            }
+        
     }
 }
