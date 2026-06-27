@@ -159,8 +159,8 @@ public class Menu : MonoBehaviour
     {
         Time.timeScale = 1f;
         isPaused = false;
-
-        SceneManager.LoadScene(mainMenuSceneName);
+        ScenesManager.Instance.Loadscenes.SetActive(true);
+        ScenesManager.Instance.LoadScene("3D场景");
         Debug.Log("返回主菜单");
     }
 

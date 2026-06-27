@@ -22,7 +22,7 @@ public class ForgetScene : MonoBehaviour
             ScenesManager.Instance.Loadscenes.SetActive(true);
             ScenesManager.Instance.LoadScene("ÒÅÍüÖ®Ëø");
             gameObject.SetActive(false);
-
+                
         }
     }
 

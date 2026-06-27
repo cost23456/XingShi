@@ -86,7 +86,7 @@ public class ImageAnimationController : MonoBehaviour
             StartDialogue();
         });
 
-        DisablePlayer();
+       // DisablePlayer();
         isOpen = true;
     }
 
@@ -411,41 +411,41 @@ public class ImageAnimationController : MonoBehaviour
     #endregion
 
     #region 玩家开关与关闭面板
-    private void DisablePlayer()
-    {
-        if (playerController != null)
-            playerController.enabled = false;
+    //private void DisablePlayer()
+    //{
+    //    if (playerController != null)
+    //        playerController.enabled = false;
 
-        if (playerInput != null)
-            playerInput.enabled = false;
+    //    if (playerInput != null)
+    //        playerInput.enabled = false;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+    //    Cursor.lockState = CursorLockMode.None;
+    //    Cursor.visible = true;
 
-        Debug.Log("主角已禁用");
-    }
+    //    Debug.Log("主角已禁用");
+    //}
 
-    private void EnablePlayer(bool lockCursor = true)
-    {
-        if (playerController != null)
-            playerController.enabled = true;
+    //private void EnablePlayer(bool lockCursor = true)
+    //{
+    //    if (playerController != null)
+    //        playerController.enabled = true;
 
-        if (playerInput != null)
-            playerInput.enabled = true;
+    //    if (playerInput != null)
+    //        playerInput.enabled = true;
 
-        if (lockCursor)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            Debug.Log("主角已启用，鼠标已锁定");
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-            Debug.Log("主角已启用，鼠标已解锁");
-        }
-    }
+    //    if (lockCursor)
+    //    {
+    //        Cursor.lockState = CursorLockMode.Locked;
+    //        Cursor.visible = false;
+    //        Debug.Log("主角已启用，鼠标已锁定");
+    //    }
+    //    else
+    //    {
+    //        Cursor.lockState = CursorLockMode.None;
+    //        Cursor.visible = true;
+    //        Debug.Log("主角已启用，鼠标已解锁");
+    //    }
+    //}
 
     public void ClosePanel()
     {
@@ -462,7 +462,7 @@ public class ImageAnimationController : MonoBehaviour
             // 关闭第三面板
             if (thirdDialogPanel != null)
                 thirdDialogPanel.SetActive(false);
-            EnablePlayer(true);
+           // EnablePlayer(true);
         });
 
         Debug.Log("关闭全部对话面板");

@@ -111,14 +111,14 @@ public class DH : MonoBehaviour
 
         if (a == 0)
         {
-            RW1.color = new Color(255f, 255f, 255F, 255f);
-            RW2.color = new Color(0f, 0f, 0f, 255f);
+            RW1.color = new Color(1f, 1f, 1F, 1f);
+            RW2.color = new Color(0.4f, 0.4f, 0.4f, 1f);
             a = 1;
         }
         else
         {
-            RW2.color = new Color(255f, 255f, 255F, 255f);
-            RW1.color = new Color(0f, 0f, 0f, 255f);
+            RW2.color = new Color(1f, 1f, 1F, 1f);
+            RW1.color = new Color(0.4f, 0.4f, 0.4f, 1f);
             a = 0;
         }
 
