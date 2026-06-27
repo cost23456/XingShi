@@ -1,3 +1,4 @@
+using DG.Tweening.Core.Easing;
 using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMove : MonoBehaviour
@@ -26,10 +27,12 @@ public class PlayerMove : MonoBehaviour
     private void Awake()
     {
         Controller = GetComponent<CharacterController>();
+        
         gameobjects.Instance.player = gameObject.transform;
     }
     private void Start()
     {
+        if(gameobjects.Instance != null && gameobjects.Instance.player != null)
         gameObject.transform.position=gameobjects.Instance.player.position;
 
     }
