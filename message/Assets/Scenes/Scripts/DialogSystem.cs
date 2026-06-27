@@ -12,16 +12,16 @@ public class DialogSystem : MonoBehaviour
     public GameObject grandfatherObj;
     public GameObject granddaughterObj;
     [Header("人物图片组件")]
-    public RawImage grandpaImg;
-    public RawImage girlImg;
+    public Image grandpaImg;      // 改为 Image
+    public Image girlImg;         // 改为 Image
 
     [Header("打字设置")]
     public float typeSpeed = 0.05f;
 
     [Header("音效设置")]
-    public AudioClip typingSound;              // 打字音效
-    public float soundInterval = 0.05f;        // 音效播放间隔（秒）
-    public float soundVolume = 0.5f;           // 音效音量
+    public AudioClip typingSound;
+    public float soundInterval = 0.05f;
+    public float soundVolume = 0.5f;
 
     [System.Serializable]
     public struct SentenceData
@@ -44,7 +44,6 @@ public class DialogSystem : MonoBehaviour
 
     void Start()
     {
-        // 初始化音效
         SetupAudioSource();
 
         SetAllDark();
@@ -104,12 +103,27 @@ public class DialogSystem : MonoBehaviour
         SetAllDark();
         if (data.speaker == 0)
         {
-            grandpaImg.color = Color.white;
+            SetAvatarBrightness(grandpaImg, 1f);      // 爷爷说话：亮度1
+            SetAvatarBrightness(girlImg, 0.4f);        // 孙女不说话：亮度0.4
         }
         else if (data.speaker == 1)
         {
-            girlImg.color = Color.white;
+            SetAvatarBrightness(girlImg, 1f);          // 孙女说话：亮度1
+            SetAvatarBrightness(grandpaImg, 0.4f);      // 爷爷不说话：亮度0.4
         }
+    }
+
+    // 设置单个头像亮度
+    private void SetAvatarBrightness(Image avatar, float brightness)
+    {
+        if (avatar == null) return;
+
+        Color color = avatar.color;
+        color.r = brightness;
+        color.g = brightness;
+        color.b = brightness;
+        // 保留 Alpha 不变
+        avatar.color = color;
     }
 
     // 开始逐字打印当前句子
@@ -125,8 +139,8 @@ public class DialogSystem : MonoBehaviour
 
     void SetAllDark()
     {
-        grandpaImg.color = new Color(0.5f, 0.5f, 0.5f, 0.6f);
-        girlImg.color = new Color(0.5f, 0.5f, 0.5f, 0.6f);
+        SetAvatarBrightness(grandpaImg, 0.4f);
+        SetAvatarBrightness(girlImg, 0.4f);
     }
 
     public void CloseDialog()
@@ -169,7 +183,6 @@ public class DialogSystem : MonoBehaviour
         // 对话开启 + 鼠标左键按下
         if (dialogIsOpen && Input.GetMouseButtonDown(0))
         {
-            // 判断点击落在对话框UI上
             if (EventSystem.current.IsPointerOverGameObject())
             {
                 NextSentence();
@@ -179,7 +192,6 @@ public class DialogSystem : MonoBehaviour
 
     void NextSentence()
     {
-        // 如果还在打字，直接显示完整句子，不跳转
         if (isTypingNow)
         {
             SentenceData data = dialogList[currentIndex];
@@ -188,7 +200,6 @@ public class DialogSystem : MonoBehaviour
             return;
         }
 
-        // 打字结束，切换下一句
         if (currentIndex < dialogList.Length - 1)
         {
             currentIndex++;
@@ -200,9 +211,6 @@ public class DialogSystem : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 播放打字音效
-    /// </summary>
     private void PlayTypingSound()
     {
         if (audioSource != null && typingSound != null)
@@ -211,7 +219,6 @@ public class DialogSystem : MonoBehaviour
         }
         else if (typingSound != null)
         {
-            // 备用方案：静态播放
             AudioSource.PlayClipAtPoint(typingSound, transform.position, soundVolume);
         }
     }
