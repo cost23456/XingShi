@@ -20,15 +20,25 @@ public class DH : MonoBehaviour
     [Header("人物")]
     public Image RW1;
     public Image RW2;
+
+    [Header("音效设置")]
+    public AudioClip typingSound;              // 打字音效
+    public float soundInterval = 0.04f;        // 音效播放间隔（秒）
+    public float soundVolume = 0.5f;           // 音效音量
+
     private int a = 0;
 
     // 当前正在播放的对话资源
     private DHdata curDialogue;
-    //public DHdata dh;
     // 当前播放到第几句
     private int curIndex;
     // 标记：是否正在播放打字逐字动画
     private bool isTyping = false;
+    // 标记：对话是否开启
+    private bool isDialogueOpen = false;
+    // 音效组件
+    private AudioSource audioSource;
+    private float lastSoundTime = 0f;
 
     private void Awake()
     {
@@ -42,14 +52,47 @@ public class DH : MonoBehaviour
             // 如果重复挂载，直接删除多余对象
             Destroy(gameObject);
         }
+
+        // 初始化音效
+        SetupAudioSource();
     }
 
     private void Start()
     {
         // 游戏开始时隐藏对话面板
         dialoguePanel.SetActive(false);
-        // 给下一句按钮绑定点击事件
-       // btnNext.onClick.AddListener(ShowNextSentence);
+    }
+
+    private void SetupAudioSource()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null && typingSound != null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.volume = soundVolume;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
+        }
+        else if (audioSource != null)
+        {
+            audioSource.volume = soundVolume;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
+        }
+
+        if (typingSound == null)
+        {
+            Debug.LogWarning("typingSound 未赋值！请在 Inspector 中拖入音效文件");
+        }
+    }
+
+    private void Update()
+    {
+        // 对话开启时，检测鼠标点击
+        if (isDialogueOpen && Input.GetMouseButtonDown(0))
+        {
+            ShowNextSentence();
+        }
     }
 
     /// <summary>
@@ -64,6 +107,8 @@ public class DH : MonoBehaviour
         curIndex = 0;
         // 显示对话弹窗
         dialoguePanel.SetActive(true);
+        isDialogueOpen = true;
+
         if (a == 0)
         {
             RW1.color = new Color(255f, 255f, 255F, 255f);
@@ -88,8 +133,6 @@ public class DH : MonoBehaviour
     {
         // 获取当前这句对话数据
         Sentence line = curDialogue.dialogueLines[curIndex];
-        // 更新说话人名称
-       // txtSpeaker.text = line.speakerName;
         // 停止上一次未播放完的打字协程，防止文字重叠
         StopAllCoroutines();
         // 开启逐字打字动画
@@ -105,11 +148,20 @@ public class DH : MonoBehaviour
         isTyping = true;
         // 先清空文本框
         txtContent.text = "";
+        lastSoundTime = 0f;
 
         // 循环每一个字符，逐个添加到文本
         foreach (char c in text)
         {
             txtContent.text += c;
+
+            // 播放打字音效
+            if (typingSound != null && Time.time - lastSoundTime >= soundInterval)
+            {
+                PlayTypingSound();
+                lastSoundTime = Time.time;
+            }
+
             // 每个字间隔0.04秒，控制打字速度
             yield return new WaitForSeconds(0.04f);
         }
@@ -119,22 +171,43 @@ public class DH : MonoBehaviour
     }
 
     /// <summary>
-    /// 下一句按钮点击执行逻辑
+    /// 播放打字音效
+    /// </summary>
+    private void PlayTypingSound()
+    {
+        if (audioSource != null && typingSound != null)
+        {
+            audioSource.PlayOneShot(typingSound, soundVolume);
+        }
+        else if (typingSound != null)
+        {
+            // 备用方案：静态播放
+            AudioSource.PlayClipAtPoint(typingSound, transform.position, soundVolume);
+        }
+    }
+
+    /// <summary>
+    /// 下一句执行逻辑
     /// </summary>
     public void ShowNextSentence()
     {
+        // 如果对话未开启，不执行
+        if (!isDialogueOpen) return;
+
+        // 切换人物头像高亮
         if (a == 0)
         {
-            RW1.color = new Color(255f, 255f, 255F, 255f);
-            RW2.color = new Color(0f, 0f, 0f, 255f);
+            RW1.color = new Color(1f, 1f, 1f, 1f);      // RW1 完全显示
+            RW2.color = new Color(0.4f, 0.4f, 0.4f, 1f);    // RW2 透明度0.4
             a = 1;
         }
         else
         {
-            RW2.color = new Color(255f, 255f, 255F, 255f);
-            RW1.color = new Color(0f, 0f, 0f, 255f);
+            RW2.color = new Color(1f, 1f, 1f, 1f);      // RW2 完全显示
+            RW1.color = new Color(0.4f, 0.4f, 0.4f, 1f);    // RW1 透明度0.4
             a = 0;
         }
+
         // 如果还在打字，点击直接显示完整文字，跳过动画
         if (isTyping)
         {
@@ -166,6 +239,7 @@ public class DH : MonoBehaviour
     public void CloseDialogue()
     {
         dialoguePanel.SetActive(false);
+        isDialogueOpen = false;
         StopAllCoroutines();
     }
 }

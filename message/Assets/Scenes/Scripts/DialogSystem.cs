@@ -18,6 +18,11 @@ public class DialogSystem : MonoBehaviour
     [Header("打字设置")]
     public float typeSpeed = 0.05f;
 
+    [Header("音效设置")]
+    public AudioClip typingSound;              // 打字音效
+    public float soundInterval = 0.05f;        // 音效播放间隔（秒）
+    public float soundVolume = 0.5f;           // 音效音量
+
     [System.Serializable]
     public struct SentenceData
     {
@@ -34,9 +39,14 @@ public class DialogSystem : MonoBehaviour
     private int charShowIndex;
     private float typeTimer;
     private bool isTypingNow;
+    private AudioSource audioSource;
+    private float lastSoundTime = 0f;
 
     void Start()
     {
+        // 初始化音效
+        SetupAudioSource();
+
         SetAllDark();
         dialogPanel.SetActive(false);
         grandfatherObj.SetActive(false);
@@ -47,6 +57,29 @@ public class DialogSystem : MonoBehaviour
         typeTimer = 0;
         isTypingNow = false;
         RefreshSentence();
+    }
+
+    void SetupAudioSource()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null && typingSound != null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.volume = soundVolume;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
+        }
+        else if (audioSource != null)
+        {
+            audioSource.volume = soundVolume;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
+        }
+
+        if (typingSound == null)
+        {
+            Debug.LogWarning("typingSound 未赋值！请在 Inspector 中拖入音效文件");
+        }
     }
 
     // 点击尺子触发对话
@@ -86,6 +119,7 @@ public class DialogSystem : MonoBehaviour
         charShowIndex = 0;
         typeTimer = 0;
         isTypingNow = true;
+        lastSoundTime = 0f;
         dialogText.text = "";
     }
 
@@ -116,6 +150,13 @@ public class DialogSystem : MonoBehaviour
                 SentenceData data = dialogList[currentIndex];
                 charShowIndex++;
                 dialogText.text = data.content.Substring(0, charShowIndex);
+
+                // 播放打字音效
+                if (typingSound != null && Time.time - lastSoundTime >= soundInterval)
+                {
+                    PlayTypingSound();
+                    lastSoundTime = Time.time;
+                }
 
                 // 当前句子全部打完，停止打字
                 if (charShowIndex >= data.content.Length)
@@ -156,6 +197,22 @@ public class DialogSystem : MonoBehaviour
         else
         {
             CloseDialog();
+        }
+    }
+
+    /// <summary>
+    /// 播放打字音效
+    /// </summary>
+    private void PlayTypingSound()
+    {
+        if (audioSource != null && typingSound != null)
+        {
+            audioSource.PlayOneShot(typingSound, soundVolume);
+        }
+        else if (typingSound != null)
+        {
+            // 备用方案：静态播放
+            AudioSource.PlayClipAtPoint(typingSound, transform.position, soundVolume);
         }
     }
 }

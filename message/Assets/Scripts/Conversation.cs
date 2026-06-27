@@ -14,27 +14,51 @@ public class Conversation : MonoBehaviour
     public Text textLabel;
 
     [Header("头像变暗设置")]
-    public Image speakerAvatar1;          // 说话者1头像
-    public Image speakerAvatar2;          // 说话者2头像
-    public float activeBrightness = 1f;   // 说话时亮度（正常）
-    public float inactiveBrightness = 0.4f; // 不说话时亮度（变暗）
+    public Image speakerAvatar1;
+    public Image speakerAvatar2;
+    public float activeBrightness = 1f;
+    public float inactiveBrightness = 0.4f;
 
     [Header("说话者标识")]
-    public string speaker1Name = "主角";   // 说话者1名称
-    public string speaker2Name = "NPC";    // 说话者2名称
+    public string speaker1Name = "主角";
+    public string speaker2Name = "NPC";
 
     [Header("打字效果设置")]
     public float typingSpeed = 0.05f;
+
+    [Header("音效设置")]
+    public AudioClip typingSound;              // 打字音效
+    public float soundInterval = 0.1f;         // 音效播放间隔（秒）
+    public float soundVolume = 0.5f;           // 音效音量
 
     public int index;
 
     List<string> textList = new List<string>();
     private Coroutine typingCoroutine;
     private bool isTyping = false;
+    private AudioSource audioSource;
+    private float lastSoundTime = 0f;
 
     void Awake()
     {
         GetTextFile(textFile);
+
+        // 获取或添加 AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.volume = soundVolume;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f; // 2D 音效
+            Debug.Log("已创建 AudioSource");
+        }
+        else
+        {
+            audioSource.volume = soundVolume;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
+        }
     }
 
     private void OnEnable()
@@ -43,7 +67,6 @@ public class Conversation : MonoBehaviour
 
         if (textList.Count > 0 && index < textList.Count)
         {
-            // 显示第一句前先更新头像
             UpdateAvatar(textList[index]);
             StartTyping(textList[index]);
             index++;
@@ -71,7 +94,6 @@ public class Conversation : MonoBehaviour
 
             if (index < textList.Count)
             {
-                // 显示下一句前更新头像
                 UpdateAvatar(textList[index]);
                 StartTyping(textList[index]);
                 index++;
@@ -84,15 +106,10 @@ public class Conversation : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 根据对话内容更新头像亮度
-    /// </summary>
     private void UpdateAvatar(string dialogueLine)
     {
-        // 判断说话者
         bool isSpeaker1 = dialogueLine.StartsWith(speaker1Name + ":");
 
-        // 设置头像亮度
         if (speakerAvatar1 != null)
         {
             SetAvatarBrightness(speakerAvatar1, isSpeaker1 ? activeBrightness : inactiveBrightness);
@@ -104,9 +121,6 @@ public class Conversation : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 设置单个头像亮度（颜色变暗，保留Alpha）
-    /// </summary>
     private void SetAvatarBrightness(Image avatar, float brightness)
     {
         if (avatar == null) return;
@@ -130,12 +144,20 @@ public class Conversation : MonoBehaviour
         isTyping = true;
         textLabel.text = "";
 
-        // 如果文本包含说话者前缀，移除它再显示
         string displayText = RemoveSpeakerPrefix(text);
+        lastSoundTime = 0f;
 
         foreach (char c in displayText)
         {
             textLabel.text += c;
+
+            // 播放打字音效（按间隔控制）
+            if (typingSound != null && Time.time - lastSoundTime >= soundInterval)
+            {
+                PlayTypingSound();
+                lastSoundTime = Time.time;
+            }
+
             yield return new WaitForSeconds(typingSpeed);
         }
 
@@ -143,8 +165,21 @@ public class Conversation : MonoBehaviour
     }
 
     /// <summary>
-    /// 移除对话中的说话者前缀
+    /// 播放打字音效
     /// </summary>
+    private void PlayTypingSound()
+    {
+        if (audioSource != null && typingSound != null)
+        {
+            audioSource.PlayOneShot(typingSound, soundVolume);
+        }
+        else if (typingSound != null)
+        {
+            // 如果没有 AudioSource，用静态方法播放
+            AudioSource.PlayClipAtPoint(typingSound, transform.position, soundVolume);
+        }
+    }
+
     private string RemoveSpeakerPrefix(string text)
     {
         if (text.Contains(":"))
