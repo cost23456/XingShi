@@ -26,6 +26,12 @@ public class PlayerMove : MonoBehaviour
     private void Awake()
     {
         Controller = GetComponent<CharacterController>();
+        gameobjects.Instance.player = gameObject.transform;
+    }
+    private void Start()
+    {
+        gameObject.transform.position=gameobjects.Instance.player.position;
+
     }
 
     private void Update()

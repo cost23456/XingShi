@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ForgetScene : MonoBehaviour
+public class TerminusScene : MonoBehaviour
 {
     private bool playerInZone;
     private bool isLoading = false;
@@ -20,16 +20,17 @@ public class ForgetScene : MonoBehaviour
         {
             isLoading = true;
             ScenesManager.Instance.Loadscenes.SetActive(true);
-            ScenesManager.Instance.LoadScene("ÒÅÍüÖ®Ëø");
+            ScenesManager.Instance.LoadScene("3D³¡¾°");
             gameObject.SetActive(false);
-                
+
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+  
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         if (isLoading || this == null) return;
-        if (other.CompareTag("Player"))
+        if (collision.CompareTag("Player"))
         {
             playerInZone = true;
 

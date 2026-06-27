@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ForgetScene : MonoBehaviour
+public class TwodScene : MonoBehaviour
 {
     private bool playerInZone;
     private bool isLoading = false;
@@ -20,9 +20,9 @@ public class ForgetScene : MonoBehaviour
         {
             isLoading = true;
             ScenesManager.Instance.Loadscenes.SetActive(true);
-            ScenesManager.Instance.LoadScene("ÒÅÍüÖ®Ëø");
+            ScenesManager.Instance.LoadScene("2dpaoku");
             gameObject.SetActive(false);
-                
+
         }
     }
 
@@ -35,5 +35,4 @@ public class ForgetScene : MonoBehaviour
 
         }
     }
-
 }
