@@ -1,141 +1,88 @@
 using UnityEngine;
-
-public class PlayerController : MonoBehaviour
+[RequireComponent(typeof(CharacterController))]
+public class PlayerMove : MonoBehaviour
 {
+    private CharacterController Controller;
+
+    [Header("输入设置")]
+    private float horizontal;
+    private float vertical;
+    private Vector3 direction;
+
+    [Header("旋转设置")]
+    [SerializeField] private float turnSpeed;//角色旋转速度
+    [SerializeField] private Camera mainCamera;
+
+    [Header("跳跃设置")]
+    [SerializeField] private float jumpHeight;//跳跃高度
+    [SerializeField] private float gravity;//重力加速度
+    private Vector3 velocityGravity;//速度
+    private bool IsGround;
+
     [Header("移动设置")]
-    public float moveSpeed = 5f;
-    public float runSpeed = 8f;
-    public float jumpForce = 5f;
-    public float lookSensitivity = 2f;
-
-    [Header("鼠标设置")]
-    public float mouseSensitivity = 2f;
-    public float minYAngle = -80f;
-    public float maxYAngle = 80f;
-
-    [Header("地面检测")]
-    public Transform groundCheck;
-    public float groundCheckRadius = 0.2f;
-    public LayerMask groundLayer;
-
-    [Header("组件引用")]
-    public Transform cameraTransform;
-
-    private Rigidbody rb;
+    [SerializeField] private float moveSpeed;
     private Vector3 moveDirection;
-    private float xRotation = 0f;
-    private bool isGrounded;
 
-    void Start()
+    private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        if (rb == null)
+        Controller = GetComponent<CharacterController>();
+    }
+
+    private void Update()
+    {
+        SetPlayerMove();
+        SetPlayerRotation();
+        SetPlayerJump();
+        SetPlayerGravity();
+    }
+
+    private void SetPlayerMove()
+    {
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
+        direction = new Vector3(horizontal, 0, vertical);
+
+        Vector3 cameraForward = mainCamera.transform.forward;
+        Vector3 cameraRight = mainCamera.transform.right;
+        cameraForward.y = 0;
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        // 【这里修复了！】正确的相机视角移动公式
+        moveDirection = cameraForward * vertical + cameraRight * horizontal;
+
+        Controller.Move(moveSpeed * Time.deltaTime * moveDirection.normalized);
+    }
+
+    private void SetPlayerRotation()
+    {
+        if (direction != Vector3.zero)
         {
-            rb = gameObject.AddComponent<Rigidbody>();
-            rb.constraints = RigidbodyConstraints.FreezeRotation;
+            Quaternion targetrotation = Quaternion.LookRotation(moveDirection, transform.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetrotation, turnSpeed * Time.deltaTime);
         }
-
-        if (cameraTransform == null)
-            cameraTransform = Camera.main.transform;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
-    void Update()
+    private void SetPlayerJump()
     {
-        CheckGrounded();
-        HandleMouseLook();
-        HandleJump();
-    }
-
-    void FixedUpdate()
-    {
-        HandleMovement();
-        ApplyGravity();
-    }
-
-    void CheckGrounded()
-    {
-        if (groundCheck != null)
+        if (IsGround && Input.GetButtonDown("Jump"))
         {
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
+            velocityGravity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
+        }
+    }
+
+    private void SetPlayerGravity()
+    {
+        Controller.Move(velocityGravity * Time.deltaTime);
+
+        IsGround = Controller.isGrounded;
+        if (IsGround)
+        {
+            velocityGravity.y = -2f;
         }
         else
         {
-            // 简单地面检测：从脚底向下射线检测
-            RaycastHit hit;
-            float distance = 0.2f;
-            isGrounded = Physics.Raycast(transform.position, Vector3.down, out hit, distance + 0.1f, groundLayer);
-        }
-    }
-
-    void HandleMouseLook()
-    {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
-
-        transform.Rotate(Vector3.up * mouseX);
-
-        if (cameraTransform != null)
-        {
-            xRotation -= mouseY;
-            xRotation = Mathf.Clamp(xRotation, minYAngle, maxYAngle);
-            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        }
-    }
-
-    void HandleMovement()
-    {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-
-        bool isRunning = Input.GetKey(KeyCode.LeftShift);
-
-        // 计算移动方向（相对于角色朝向）
-        Vector3 move = transform.forward * vertical + transform.right * horizontal;
-
-        if (move.magnitude > 1f)
-            move.Normalize();
-
-        float currentSpeed = isRunning ? runSpeed : moveSpeed;
-
-        // 使用 Rigidbody 移动
-        Vector3 targetVelocity = move * currentSpeed;
-        targetVelocity.y = rb.velocity.y;
-
-        rb.velocity = targetVelocity;
-    }
-
-    void HandleJump()
-    {
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
-        }
-    }
-
-    void ApplyGravity()
-    {
-        // 重力由物理引擎自动处理，不需要手动添加
-        // 如果需要在空中限制下落速度，可以在这里处理
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        if (groundCheck != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        }
-    }
-
-    void OnApplicationFocus(bool hasFocus)
-    {
-        if (hasFocus)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            velocityGravity.y += gravity * Time.deltaTime;
         }
     }
 }
