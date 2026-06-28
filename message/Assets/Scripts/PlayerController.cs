@@ -1,5 +1,5 @@
-using DG.Tweening.Core.Easing;
 using UnityEngine;
+
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMove : MonoBehaviour
 {
@@ -8,90 +8,63 @@ public class PlayerMove : MonoBehaviour
     [Header("输入设置")]
     private float horizontal;
     private float vertical;
-    private Vector3 direction;
+    private Vector3 inputDir;
 
     [Header("旋转设置")]
-    [SerializeField] private float turnSpeed;//角色旋转速度
+    [SerializeField] private float turnSpeed;
     [SerializeField] private Camera mainCamera;
-
-    [Header("跳跃设置")]
-    [SerializeField] private float jumpHeight;//跳跃高度
-    [SerializeField] private float gravity;//重力加速度
-    private Vector3 velocityGravity;//速度
-    private bool IsGround;
 
     [Header("移动设置")]
     [SerializeField] private float moveSpeed;
-    private Vector3 moveDirection;
 
     private void Awake()
     {
-        Controller = GetComponent<CharacterController>();
-        
-        gameobjects.Instance.player = gameObject.transform;
+        this.Controller = this.GetComponent<CharacterController>();
+
+        if (gameobjects.Instance != null)
+        {
+            gameobjects.Instance.player = this.transform;
+        }
     }
     private void Start()
     {
-        if(gameobjects.Instance != null && gameobjects.Instance.player != null)
-        gameObject.transform.position=gameobjects.Instance.player.position;
-
+        if (gameobjects.Instance != null && gameobjects.Instance.player != null)
+        {
+            this.transform.position = gameobjects.Instance.player.position;
+        }
     }
 
     private void Update()
     {
-        SetPlayerMove();
-        SetPlayerRotation();
-        SetPlayerJump();
-        SetPlayerGravity();
+        if (gameobjects.Instance._2DisSuccess) return;
+        this.SetPlayerMove();
     }
 
     private void SetPlayerMove()
     {
-        horizontal = Input.GetAxis("Horizontal");
-        vertical = Input.GetAxis("Vertical");
-        direction = new Vector3(horizontal, 0, vertical);
+        if (gameobjects.Instance._2DisSuccess) return;
+        this.horizontal = Input.GetAxis("Horizontal");
+        this.vertical = Input.GetAxis("Vertical");
+        this.inputDir = new Vector3(this.horizontal, 0, this.vertical).normalized;
 
-        Vector3 cameraForward = mainCamera.transform.forward;
-        Vector3 cameraRight = mainCamera.transform.right;
-        cameraForward.y = 0;
-        cameraForward.Normalize();
-        cameraRight.Normalize();
+        // 获取相机水平前后、左右（去掉Y，只水平面）
+        Vector3 camForward = mainCamera.transform.forward;
+        Vector3 camRight = mainCamera.transform.right;
+        camForward.y = 0;
+        camRight.y = 0;
+        camForward.Normalize();
+        camRight.Normalize();
 
-        // 【这里修复了！】正确的相机视角移动公式
-        moveDirection = cameraForward * vertical + cameraRight * horizontal;
+        // WASD 相对于相机方向移动
+        Vector3 moveDir = (camForward * this.vertical + camRight * this.horizontal).normalized;
 
-        Controller.Move(moveSpeed * Time.deltaTime * moveDirection.normalized);
-    }
-
-    private void SetPlayerRotation()
-    {
-        if (direction != Vector3.zero)
+        // 有移动输入时，人物面朝相机前方
+        if (moveDir.magnitude > 0.01f)
         {
-            Quaternion targetrotation = Quaternion.LookRotation(moveDirection, transform.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetrotation, turnSpeed * Time.deltaTime);
+            Quaternion targetRot = Quaternion.LookRotation(camForward);
+            this.transform.rotation = Quaternion.Slerp(this.transform.rotation, targetRot, this.turnSpeed * Time.deltaTime);
         }
-    }
 
-    private void SetPlayerJump()
-    {
-        if (IsGround && Input.GetButtonDown("Jump"))
-        {
-            velocityGravity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
-        }
-    }
-
-    private void SetPlayerGravity()
-    {
-        Controller.Move(velocityGravity * Time.deltaTime);
-
-        IsGround = Controller.isGrounded;
-        if (IsGround)
-        {
-            velocityGravity.y = -2f;
-        }
-        else
-        {
-            velocityGravity.y += gravity * Time.deltaTime;
-        }
+        this.Controller.Move(moveDir * this.moveSpeed * Time.deltaTime);
     }
 }

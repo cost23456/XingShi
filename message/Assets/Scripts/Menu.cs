@@ -160,7 +160,7 @@ public class Menu : MonoBehaviour
         Time.timeScale = 1f;
         isPaused = false;
         ScenesManager.Instance.Loadscenes.SetActive(true);
-        ScenesManager.Instance.LoadScene("3D场景");
+        ScenesManager.Instance.LoadScene("遗憾回廊");
         Debug.Log("返回主菜单");
     }
 

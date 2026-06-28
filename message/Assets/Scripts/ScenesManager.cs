@@ -72,19 +72,12 @@ public class ScenesManager : Singleton<ScenesManager>
     }
     public void Update()
     {
-
-
-        
             if (!alreadyDone && Input.anyKeyDown)
             {
             alreadyDone = true;
                 Interface.SetActive(false);
                 Loadscenes.SetActive(true);
-                LoadScene("3D≥°æ∞");
-
-
-
+                LoadScene("“≈∫∂ªÿ¿»");
             }
-        
     }
 }

@@ -20,7 +20,7 @@ public class TerminusScene : MonoBehaviour
         {
             isLoading = true;
             ScenesManager.Instance.Loadscenes.SetActive(true);
-            ScenesManager.Instance.LoadScene("3D≥°æ∞");
+            ScenesManager.Instance.LoadScene("“≈∫∂ªÿ¿»");
             gameObject.SetActive(false);
 
         }

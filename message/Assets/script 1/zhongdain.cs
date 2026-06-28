@@ -7,7 +7,8 @@ public class zhongdain : MonoBehaviour
     public GameObject playerxin;
     public GameObject xinfPrefab;  // 改为命名为 Prefab
     public GameObject zhongdian;
-    
+    private bool isSuccess = false;
+    private bool isLoad = false;
     private GameObject currentXinf;  // 当前生成的 xinf 对象引用
 
     void Start()
@@ -33,7 +34,15 @@ public class zhongdain : MonoBehaviour
                 // 到达终点后可以选择销毁对象或做其他处理
                 // Destroy(currentXinf);
                 // currentXinf = null;
+                this.isSuccess = true;
             }
+        }
+        if (isSuccess && !isLoad)
+        {
+            this.isLoad = true;
+            ScenesManager.Instance.LoadScene("遗憾回廊");
+            ScenesManager.Instance.Loadscenes.SetActive(true);
+            gameobjects.Instance._2DisSuccess = true;
         }
     }
     

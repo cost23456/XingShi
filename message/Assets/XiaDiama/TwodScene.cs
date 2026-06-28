@@ -20,7 +20,7 @@ public class TwodScene : MonoBehaviour
         {
             isLoading = true;
             ScenesManager.Instance.Loadscenes.SetActive(true);
-            ScenesManager.Instance.LoadScene("2dpaoku");
+            ScenesManager.Instance.LoadScene("网络世界");
             gameObject.SetActive(false);
 
         }

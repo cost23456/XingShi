@@ -6,7 +6,7 @@ public class VideoAutoClose : MonoBehaviour
     public VideoPlayer videoPlayer;
     public GameObject videoUI; // 填你的RawImage/整个视频UI父物体
     public GameObject Zhu;
-
+    public GameObject GameTitle;
     void Start()
     {
         // 注册视频播放完成事件
@@ -24,8 +24,9 @@ public class VideoAutoClose : MonoBehaviour
         // ScenesManager.Instance.LoadScene("MainGame");
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
+        this.GameTitle.SetActive(true);
         // 移除监听，防止内存泄漏
         videoPlayer.loopPointReached -= OnVideoEnd;
        

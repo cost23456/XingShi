@@ -4,43 +4,63 @@ public class CameraControl : MonoBehaviour
 {
     public Transform player;
     public float rotateSpeed = 400f;
+    public float minPitch = -30f;
+    public float maxPitch = 60f;
 
-    public Vector3 offset; // 固定偏移，永远不变
+    private Vector3 originalOffset;
+    private float pitchAngle;
+    private float yawAngle;
 
     void Start()
     {
-        // 一开始相机距离玩家多远，就永远保持这个距离
-        offset = transform.position - player.position;
+        if (gameobjects.Instance._2DisSuccess) return;
+        // 开机自动锁定鼠标
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        originalOffset = transform.position - player.position;
+        yawAngle = transform.eulerAngles.y;
+        pitchAngle = transform.eulerAngles.x;
     }
 
     void LateUpdate()
     {
-        // Alt 切换鼠标锁定
+        if (gameobjects.Instance._2DisSuccess) return;
+        // Alt 解锁/重新锁定鼠标
         if (Input.GetKeyUp(KeyCode.LeftAlt))
         {
-            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
-                ? CursorLockMode.None
-                : CursorLockMode.Locked;
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
 
-        // 左右旋转：绕玩家 Y 轴
-        if (Input.GetAxis("Mouse X") != 0)
-        {
-            float mouseX = Input.GetAxis("Mouse X");
-            transform.RotateAround(player.position, Vector3.up, mouseX * rotateSpeed * Time.deltaTime);
-        }
+        // 鼠标锁定时才允许旋转视角
+        if (Cursor.lockState != CursorLockMode.Locked) return;
 
-        // 上下旋转：绕玩家右侧轴旋转
-        if (Input.GetAxis("Mouse Y") != 0)
-        {
-            float mouseY = Input.GetAxis("Mouse Y");
-            transform.RotateAround(player.position, transform.right, -mouseY * rotateSpeed * Time.deltaTime);
-        }
+        // 水平左右旋转（Yaw）
+        float mouseX = Input.GetAxis("Mouse X");
+        yawAngle += mouseX * rotateSpeed * Time.deltaTime;
 
-        // 关键：强制保持初始距离，永远不会拉近拉远
-        transform.position = player.position + offset.normalized * offset.magnitude;
+        // 上下俯仰旋转（Pitch，限制角度防止翻转）
+        float mouseY = Input.GetAxis("Mouse Y");
+        pitchAngle -= mouseY * rotateSpeed * Time.deltaTime;
+        pitchAngle = Mathf.Clamp(pitchAngle, minPitch, maxPitch);
 
-        // 相机始终看玩家
+        // 根据俯仰+水平角度计算相机位置
+        Quaternion rot = Quaternion.Euler(pitchAngle, yawAngle, 0);
+        transform.position = player.position + rot * originalOffset;
         transform.LookAt(player);
+    }
+    private void OnDisable()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }
